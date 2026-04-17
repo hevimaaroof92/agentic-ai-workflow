@@ -27,7 +27,7 @@ def main(prompts: Optional[Tuple[str, ...]] = None) -> None:
     # MOCK MODE (FOR TESTS)
     # =========================
     if os.getenv("USE_MOCK") == "true":
-        response, functions_called = completion(prompt="mock")
+        print("MOCK MODE ACTIVE - skipping OpenAI call")
         return
 
     # =========================
