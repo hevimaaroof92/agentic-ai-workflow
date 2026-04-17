@@ -6,7 +6,8 @@
 # python stuff
 import unittest
 from unittest.mock import patch
-
+import os
+os.environ["USE_MOCK"] = "true"
 from app import agent
 from app.agent import main  # noqa: E402
 
