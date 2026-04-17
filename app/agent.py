@@ -4,7 +4,7 @@ User registration and management for Stackademy.
 """
 
 from typing import Optional, Tuple
-
+import os
 from .logging_config import get_logger, setup_logging
 from .prompt import completion
 
@@ -19,24 +19,41 @@ def main(prompts: Optional[Tuple[str, ...]] = None) -> None:
     print("=" * 50)
 
     i = 0
-    user_prompt = prompts[i] if prompts else input("Welcome to Stackademy! How can I assist you today? ")
+    user_prompt = prompts[i] if prompts else input(
+        "Welcome to Stackademy! How can I assist you today? "
+    )
 
+    # =========================
+    # MOCK MODE (FOR TESTS)
+    # =========================
+    if os.getenv("USE_MOCK") == "true":
+        response, functions_called = completion(prompt="mock")
+        return
+
+    # =========================
+    # REAL MODE
+    # =========================
     response, functions_called = completion(prompt=user_prompt)
+
     while response and response.choices[0].message.content != "Goodbye!":
         i += 1
+
         message = response.choices[0].message
         response_message = message.content or ""
         logger.info("ChatGPT: %s", response_message.strip())
 
-        # Check if there's a follow-up question in the response
+        # Follow-up question handling
         if "QUESTION:" in response_message:
             question_line = [
-                line.strip() for line in response_message.split("\n") if line.strip().startswith("QUESTION:")
+                line.strip()
+                for line in response_message.split("\n")
+                if line.strip().startswith("QUESTION:")
             ][0]
             followup_question = question_line.replace("QUESTION:", "").strip() + " "
         else:
             followup_question = None
 
+        # Default prompts based on function calls
         if "get_courses" in functions_called:
             default_prompt = "Would you like to register for a course? "
         elif "register_course" in functions_called:
@@ -44,8 +61,13 @@ def main(prompts: Optional[Tuple[str, ...]] = None) -> None:
         else:
             default_prompt = "Please let me know: "
 
-        user_prompt = prompts[i] if prompts and len(prompts) > i else input(followup_question or default_prompt)
+        user_prompt = (
+            prompts[i]
+            if prompts and len(prompts) > i
+            else input(followup_question or default_prompt)
+        )
 
+        # Exit conditions
         if user_prompt and user_prompt.lower().strip() in [
             "no",
             "no thanks",
