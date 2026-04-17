@@ -73,7 +73,8 @@ jobs:
       - name: Notify on test results
         run: |
           if [ "${{ needs.python-unit-tests.result }}" == "success" ]; then
-            echo "success notifications go here"
+            echo "Tests passed"
           else
-            echo "failure notifications go here"
+            echo "Tests failed - notification triggered"
+            exit 1
           fi
