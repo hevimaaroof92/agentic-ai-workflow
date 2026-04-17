@@ -75,5 +75,19 @@ jobs:
           if [ "${{ needs.python-unit-tests.result }}" == "success" ]; then
             echo "success notifications go here"
           else
-            echo "failure notifications go here"
+            echo "Sending failure email..."
+
+          curl --url 'smtps://smtp.gmail.com:465' \
+            --ssl-reqd \
+            --mail-from 'maaroofhevi@gmail.com' \
+            --mail-rcpt 'maaroofhevi@gmail.com' \
+            --user 'maaroofhevi@gmail.com:${{ secrets.SMTP_PASSWORD }}' \
+            --upload-file - <<EOF
+From: GitHub Actions <maaroofhevi@gmail.com>
+To: maaroofhevi@gmail.com
+Subject: GitHub Actions FAILED
+
+Your Python tests failed in:
+${{ github.repository }}
+EOF
           fi
